@@ -1,3 +1,21 @@
+      ******************************************************************
+      * This routine is a challenge suggest by my first manager
+      * when I was a internal in a huge finantial institution.
+      *
+      * The purpose is simple, I'd receive a string (name, document, 
+      * address) and I need to mask it.
+      *
+      * This way the info will be safe to be access for other projects.
+      * 
+      ******************************************************************
+       IDENTIFICATION                    DIVISION.
+      *-----------------------------------------------------------------
+       PROGRAM-ID.                       CUDMASK.
+       AUTHOR.                           MAYCON MORAIS.
+       DATE-WRITTEN.                     MAY 08, 2010. 
+       DATE-COMPILED.     
+       
+      ****************************************************************** 
       *================================================================*
       *        E N V I R O N M E N T     D I V I S I O N               *
       *================================================================*
