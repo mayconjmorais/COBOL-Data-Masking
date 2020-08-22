@@ -57,6 +57,7 @@
       *================================================================*
 
        COPY REGE1.
+
       *================================================================*
       *      W O R K I N G - S T O R A G E   S E C T I O N             *
       *================================================================*
@@ -111,7 +112,6 @@
       ******************************************************************
 
        01 SW-SWITCHES.
-
           05 SW-ARQUIVO                PIC X(03) VALUE 'N'.
              88 SW-SIM-FIM-ARQUIVO               VALUE 'Y'.
              88 SW-NAO-FIM-ARQUIVO               VALUE 'N'.
@@ -445,6 +445,7 @@
 
        2500-GRAVAR-REGISTRO.
            WRITE REG-SAI               FROM WS-OUT-FILE
+
            END-WRITE
 
            IF WS-STATUS-S1 EQUAL CT-0 OR
