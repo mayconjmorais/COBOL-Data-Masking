@@ -44,10 +44,10 @@
 
        FILE SECTION.
        FD E1TC1AR.
-          01 REG-ENT                   PIC X(096).
+          01 REG-ENT                   PIC X(100).
 
        FD S1TC1AR.
-          01 REG-SAI                   PIC X(096).
+          01 REG-SAI                   PIC X(100).
 
 
        WORKING-STORAGE SECTION.
@@ -57,7 +57,6 @@
       *================================================================*
 
        COPY REGE1.
-
       *================================================================*
       *      W O R K I N G - S T O R A G E   S E C T I O N             *
       *================================================================*
@@ -112,6 +111,7 @@
       ******************************************************************
 
        01 SW-SWITCHES.
+
           05 SW-ARQUIVO                PIC X(03) VALUE 'N'.
              88 SW-SIM-FIM-ARQUIVO               VALUE 'Y'.
              88 SW-NAO-FIM-ARQUIVO               VALUE 'N'.
@@ -124,13 +124,12 @@
 
        0000-PRINCIPAL.
 
-           PERFORM 1000-INICIALIZA
+           PERFORM 1000-INICIALIZA.
 
            PERFORM 2000-PROCESSA
                    UNTIL SW-SIM-FIM-ARQUIVO
 
-           PERFORM 3000-FINALIZA
-
+           PERFORM 3000-FINALIZA.
            .
        0000-PRINCIPAL-EXIT.
            EXIT.
@@ -143,16 +142,15 @@
 
            INITIALIZE                  E1-REGIS
 
-           PERFORM 1100-ABRIR-ARQUIVOS
+           PERFORM 1100-ABRIR-ARQUIVOS.
 
-           PERFORM 1200-LER-REGISTRO
+           PERFORM 1200-LER-REGISTRO.
 
-           PERFORM 1210-TRATA-ESPACO
+      *    PERFORM 1210-TRATA-ESPACO.
 
-           PERFORM 1300-VALIDA-REGISTRO
+      *    PERFORM 1300-VALIDA-REGISTRO.
 
-           PERFORM 1400-ACHA-ULTIMO-CHAR
-
+      *    PERFORM 1400-ACHA-ULTIMO-CHAR.
            .
        1000-INICIALIZA-EXIT.
            EXIT.
@@ -197,15 +195,17 @@
       *================================================================*
 
        1200-LER-REGISTRO.
-
+           INITIALIZE                   E1-REGIS.
+           
            READ E1TC1AR INTO E1-REGIS
                 AT END
-                SET SW-SIM-FIM-ARQUIVO TO TRUE
+                SET SW-SIM-FIM-ARQUIVO  TO TRUE
            END-READ
 
-           IF WS-STATUS-E1 EQUAL CT-0 OR
-              WS-STATUS-E1 EQUAL CT-10
-              CONTINUE
+           IF  WS-STATUS-E1 EQUAL CT-0  OR
+               WS-STATUS-E1 EQUAL CT-10
+               MOVE E1-NAME             TO WS-DADOS
+               CONTINUE
            ELSE
                DISPLAY ' ERRO NA LEITURA DO REGISTRO '
                DISPLAY ' ERROR = ' WS-STATUS-E1
@@ -220,7 +220,6 @@
       *================================================================*
 
        1210-TRATA-ESPACO.
-
            MOVE E1-NAME                  TO WS-DADOS
 
            PERFORM VARYING WS-X
@@ -243,9 +242,7 @@
 
            .
        1210-TRATA-ESPACO-EXIT.         EXIT.
-
-
-
+           
       *================================================================*
       *        P A R A G R A F O   V A L I D A                         *
       *================================================================*
@@ -266,12 +263,12 @@
                  FROM  1 BY 1
                  UNTIL WS-Y GREATER 27
                  OR    WS-DADOS-BYTE(WS-X) EQUAL WS-LETRA(WS-Y)
-                 OR    WS-DADOS-BYTE(WS-X) EQUAL SPACE
+                 OR    WS-DADOS-BYTE(WS-X) EQUAL SPACE OR LOW-VALUE
               END-PERFORM
 
-                 IF WS-Y GREATER 27
-                    PERFORM 3000-FINALIZA
-                 END-IF
+      *       IF WS-Y GREATER 27
+      *          PERFORM 3000-FINALIZA
+      *       END-IF
            END-PERFORM
 
            .
@@ -307,26 +304,30 @@
            .
        1400-ACHA-ULTIMO-CHAR-EXIT.     EXIT.
 
-
-
       *================================================================*
       *        P A R A G R A F O   P R O C E S S A                     *
       *================================================================*
 
        2000-PROCESSA.
+           MOVE REG-ENT                TO WS-OUT-FILE.
+           
+           PERFORM 1210-TRATA-ESPACO.
 
+           PERFORM 1300-VALIDA-REGISTRO.
 
-           PERFORM 2100-INICIALIZA-VARIAVEIS
+           PERFORM 1400-ACHA-ULTIMO-CHAR.
+           
+           PERFORM 2100-INICIALIZA-VARIAVEIS.
 
-           PERFORM 2200-ACHA-PRIMEIRO-CHAR
+           PERFORM 2200-ACHA-PRIMEIRO-CHAR.
 
-           PERFORM 2300-TRATA-CARACTER
+           PERFORM 2300-TRATA-CARACTER.
 
-           PERFORM 2400-PROCESSA-MASCARA
+           PERFORM 2400-PROCESSA-MASCARA.
 
-           PERFORM 2500-GRAVAR-REGISTRO
+           PERFORM 2500-GRAVAR-REGISTRO.
 
-           GO TO 1200-LER-REGISTRO
+           PERFORM 1200-LER-REGISTRO.
            .
        2000-PROCESSA-EXIT.
            EXIT.
@@ -347,6 +348,8 @@
            MOVE 20                     TO WS-TAMANHO
            MOVE 1                      TO WS-X
            MOVE 2                      TO WS-PRESERVA
+           
+           MOVE REG-ENT                TO WS-OUT-FILE.
            .
        2100-INICIALIZA-VARIAVEIS-EXIT. EXIT.
 
@@ -356,13 +359,19 @@
 
        2200-ACHA-PRIMEIRO-CHAR.
 
-              PERFORM
+           PERFORM
                 VARYING WS-Y
                 FROM  26 BY -1
                 UNTIL WS-DADOS-BYTE(WS-X) EQUAL WS-LETRA(WS-Y)
-              END-PERFORM
-
-              SUBTRACT 1               FROM WS-Y
+                OR WS-Y EQUAL 1
+           END-PERFORM
+           
+            IF WS-Y NOT EQUAL ZEROS 
+               SUBTRACT 1               FROM WS-Y
+            ELSE 
+               ADD 1 TO WS-X 
+               GO TO 2200-ACHA-PRIMEIRO-CHAR
+            END-IF
 
            .
        2200-ACHA-PRIMEIRO-CHAR-EXIT.
@@ -404,6 +413,8 @@
                VARYING WS-Y
                FROM WS-Y BY -1
                UNTIL WS-DADOS EQUAL SPACES
+                  OR WS-DADOS EQUAL LOW-VALUES
+                  OR WS-DADOS EQUAL HIGH-VALUES
 
                IF WS-Y EQUAL CT-0
                   ADD 1                  TO WS-VALIDADE
@@ -438,14 +449,12 @@
        2400-PROCESSA-MASCARA-EXIT.
            EXIT.
 
-
       *================================================================*
       *        G R A V A   R E G I S T R O   M A S C A R A D O         *
       *================================================================*
 
        2500-GRAVAR-REGISTRO.
            WRITE REG-SAI               FROM WS-OUT-FILE
-
            END-WRITE
 
            IF WS-STATUS-S1 EQUAL CT-0 OR
@@ -465,7 +474,6 @@
       *================================================================*
 
        3000-FINALIZA.
-
 
            CLOSE E1TC1AR
 
