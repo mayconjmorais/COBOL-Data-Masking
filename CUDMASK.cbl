@@ -70,7 +70,7 @@
 
        01 WS-ALFABETO.
          05 WS-ALFA                     PIC X(027) VALUE 
-         'ABCDEFGHIJKLMNOPQRSTUVWXYZ*'.
+         'MZNXBCVLAKSUDHF*GPQOWIEJRYT'.
 
        01 LETRA                        REDEFINES WS-ALFABETO.
          05 WS-LETRA                   PIC X(001) OCCURS 27.
@@ -344,7 +344,7 @@
            
        2000-PROCESSA-EXIT.
            EXIT.
-
+           
       *================================================================*
       *        C O N T A    C A R A C T E R E S                        *
       *================================================================*
@@ -417,17 +417,18 @@
            PERFORM
              VARYING WS-Y
              FROM 1 BY 1
-             UNTIL WS-AUX GREATER THAN WS-TAMANHO
+             UNTIL E1-NAME EQUAL SPACES
 
                PERFORM
                  VARYING WS-X
                  FROM 1 BY 1
                  UNTIL WS-LETRA(WS-Y) EQUAL E1-NAME-BYTE(WS-X)
-                    OR WS-X EQUAL WS-TAMANHO
+                    OR WS-X EQUAL 30
                END-PERFORM
 
-               IF WS-LETRA(WS-Y) EQUAL E1-NAME-BYTE(WS-X)
+               IF  WS-LETRA(WS-Y) EQUAL E1-NAME-BYTE(WS-X)
                    ADD 1                TO WS-AUX
+                   MOVE SPACE           TO E1-NAME-BYTE(WS-X)
                    
                    IF WS-LETRA(WS-Y) EQUAL '*'
                        MOVE SPACE       TO WS-O-NAME(WS-AUX)
@@ -438,7 +439,7 @@
                END-IF
                
                IF  WS-Y EQUAL 27 
-                   MOVE 1               TO WS-Y
+                   MOVE 0               TO WS-Y
                END-IF
                
            END-PERFORM
@@ -452,11 +453,11 @@
       *================================================================*
 
        2500-GRAVAR-REGISTRO.
-           WRITE REG-SAI FROM WS-OUT-FILE
+           WRITE REG-SAI                FROM WS-OUT-FILE
            END-WRITE
 
-           IF WS-STATUS-S1 EQUAL CT-0 OR
-             WS-STATUS-S1 EQUAL CT-10
+           IF  WS-STATUS-S1 EQUAL CT-0 OR
+               WS-STATUS-S1 EQUAL CT-10
                CONTINUE
            ELSE
                DISPLAY ' ERRO NA GRAVACAO DO REGISTRO '
