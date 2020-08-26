@@ -7,7 +7,8 @@
       *
       ******************************************************************
        01  E1-REGIS.
-           05 E1-NAME                    PIC X(30).
+           05 E1-NAME.
+              10 E1-NAME-BYTE            PIC X(01) OCCURS 30.
            05 E1-DOC                     PIC 9(10).
            05 E1-ADDRESS                 PIC X(50).
            05 E1-POST-CODE               PIC X(06).
